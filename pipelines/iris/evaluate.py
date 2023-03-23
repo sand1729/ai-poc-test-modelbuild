@@ -16,7 +16,6 @@ logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
 
-
 if __name__ == "__main__":
     logger.debug("Starting evaluation.")
     model_path = "/opt/ml/processing/model/model.tar.gz"
@@ -43,10 +42,7 @@ if __name__ == "__main__":
     std = np.std(y_test - predictions)
     report_dict = {
         "regression_metrics": {
-            "mse": {
-                "value": mse,
-                "standard_deviation": std
-            },
+            "mse": {"value": mse, "standard_deviation": std},
         },
     }
 
