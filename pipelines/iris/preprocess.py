@@ -48,7 +48,7 @@ def merge_two_dicts(x, y):
 
 
 if __name__ == "__main__":
-    logger.debug("Starting preprocessing.")
+    logger.info("Starting preprocessing.")
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-data", type=str, required=True)
     args = parser.parse_args()
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     s3 = boto3.resource("s3")
     s3.Bucket(bucket).download_file(key, fn)
 
-    logger.debug("Reading downloaded data.")
+    logger.info("Reading downloaded data.")
     df = pd.read_csv(
         fn,
         header=None,
@@ -72,11 +72,11 @@ if __name__ == "__main__":
         dtype=merge_two_dicts(feature_columns_dtype, label_column_dtype),
     )
     os.unlink(fn)
-
-    logger.debug("Defining transformers.")
+    logger.info(f"df: {df}")
+    logger.info("Defining transformers.")
     numeric_features = list(feature_columns_names)
-    logger.debug(f"numeric_features: {numeric_features}")
-    numeric_features.remove("Species")
+    logger.info(f"numeric_features: {numeric_features}")
+    # numeric_features.remove("Species")
     numeric_transformer = Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="median")),
@@ -84,23 +84,27 @@ if __name__ == "__main__":
         ]
     )
 
-    categorical_features = ["Species"]
-    categorical_transformer = Pipeline(
-        steps=[
-            ("imputer", SimpleImputer(strategy="constant", fill_value="missing")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore")),
-        ]
-    )
+    # categorical_features = ["Species"]
+    # categorical_transformer = Pipeline(
+    #     steps=[
+    #         ("imputer", SimpleImputer(strategy="constant", fill_value="missing")),
+    #         ("onehot", OneHotEncoder(handle_unknown="ignore")),
+    #     ]
+    # )
 
     preprocess = ColumnTransformer(
         transformers=[
             ("num", numeric_transformer, numeric_features),
-            ("cat", categorical_transformer, categorical_features),
+            # ("cat", categorical_transformer, categorical_features),
         ]
     )
 
     logger.info("Applying transforms.")
+    df["Species"].replace(
+        ["Iris-setosa", "Iris-versicolor", "Iris-virginica"], [0, 1, 2], inplace=True
+    )
     y = df.pop("Species")
+    # logger.info(f"y: {y}")
     X_pre = preprocess.fit_transform(df)
     y_pre = y.to_numpy().reshape(len(y), 1)
 
