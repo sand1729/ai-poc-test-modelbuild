@@ -26,25 +26,25 @@ feature_columns_names = [
     "Sepal width",
     "Petal length",
     "Petal width",
-    "Species",
+    # "Species",
 ]
-# label_column = "Species"
+label_column = "Species"
 
 feature_columns_dtype = {
     "Sepal length": np.float64,
     "Sepal width": np.float64,
     "Petal length": np.float64,
     "Petal width": np.float64,
-    "Species": str,
+    # "Species": str,
 }
-# label_column_dtype = {"Species": np.str}
+label_column_dtype = {"Species": str}
 
 
-# def merge_two_dicts(x, y):
-#     """Merges two dicts, returning a new copy."""
-#     z = x.copy()
-#     z.update(y)
-#     return z
+def merge_two_dicts(x, y):
+    """Merges two dicts, returning a new copy."""
+    z = x.copy()
+    z.update(y)
+    return z
 
 
 if __name__ == "__main__":
@@ -68,13 +68,14 @@ if __name__ == "__main__":
     df = pd.read_csv(
         fn,
         header=None,
-        names=feature_columns_names,
-        dtype=feature_columns_dtype,
+        names=feature_columns_names + [label_column],
+        dtype=merge_two_dicts(feature_columns_dtype, label_column_dtype),
     )
     os.unlink(fn)
 
     logger.debug("Defining transformers.")
     numeric_features = list(feature_columns_names)
+    logger.debug(f"numeric_features: {numeric_features}")
     numeric_features.remove("Species")
     numeric_transformer = Pipeline(
         steps=[
